@@ -37,5 +37,5 @@
     });
   }
 
-  App.Router.register("/bookmarks", { render: render, mount: mount, auth: true, title: "Saved foods" });
+  App.Router.register("/bookmarks", { render: render, mount: mount, auth: true, roles: ["member"], title: "Saved foods" });
 })();

@@ -95,5 +95,5 @@
       '<div class="bar thin mt-2"><span style="width:' + width + "%;background:" + color + '"></span></div></div>';
   }
 
-  App.Router.register("/profile", { render: render, auth: true, title: "Profile" });
+  App.Router.register("/profile", { render: render, auth: true, roles: ["member"], title: "Profile" });
 })();

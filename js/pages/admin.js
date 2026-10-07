@@ -232,5 +232,5 @@
     };
   }
 
-  App.Router.register("/admin", { render: render, mount: mount, auth: true, admin: true, title: "Admin" });
+  App.AdminConsole = { render: render, mount: mount };
 })();

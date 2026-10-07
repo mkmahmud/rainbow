@@ -61,12 +61,20 @@ App.Router = (function () {
 
     const { route, params } = resolved;
     const authed = App.State.isAuthed();
+    const user = App.State.currentUser();
 
-    if (route.guestOnly && authed) return go("#/home");
+    // Legacy/alias routes hop straight to their destination.
+    if (route.redirect) return go(route.redirect);
+
+    if (route.guestOnly && authed) return go(App.RBAC.homeFor());
     if (route.auth && !authed) return go("#/login");
-    if (route.admin && !App.Auth.isAdmin()) {
-      App.UI.toast("Admin access only.", "error");
-      return go("#/home");
+    if (route.roles && !App.RBAC.hasRole(user, route.roles)) {
+      App.UI.toast(App.I18N.t("access_denied"), "warn");
+      return go(App.RBAC.homeFor());
+    }
+    if (route.can && !App.RBAC.can(user, route.can)) {
+      App.UI.toast(App.I18N.t("access_denied"), "warn");
+      return go(App.RBAC.homeFor());
     }
     if (route.requiresProfile) {
       const u = App.State.currentUser();
@@ -94,7 +102,7 @@ App.Router = (function () {
 
   function start() {
     window.addEventListener("hashchange", render);
-    if (!location.hash) location.hash = App.State.isAuthed() ? "#/home" : "#/";
+    if (!location.hash) location.hash = App.State.isAuthed() ? "#/dashboard" : "#/";
     render();
   }
 

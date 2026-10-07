@@ -187,5 +187,5 @@
     });
   }
 
-  App.Router.register("/onboarding", { render: render, mount: mount, auth: true, title: "Set up profile" });
+  App.Router.register("/onboarding", { render: render, mount: mount, auth: true, roles: ["member"], title: "Set up profile" });
 })();

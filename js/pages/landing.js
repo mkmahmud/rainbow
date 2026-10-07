@@ -10,7 +10,7 @@
         "<h1>" + App.UI.esc(t("appName")) + " — " + App.UI.esc("know your food, eat for your health") + "</h1>" +
         "<p>Nutrition data for local foods, personalized diet suggestions, condition-aware safety (diabetes, heart, kidney), plant-based swaps and budget-friendly picks — all in one place.</p>" +
         '<div class="row">' +
-          '<a class="btn btn-accent btn-lg" href="' + (authed ? "#/home" : "#/register") + '">' + App.UI.esc(authed ? "Open dashboard" : "Create free account") + "</a>" +
+          '<a class="btn btn-accent btn-lg" href="' + (authed ? "#/dashboard" : "#/register") + '">' + App.UI.esc(authed ? "Open dashboard" : "Create free account") + "</a>" +
           '<a class="btn btn-outline btn-lg" href="#/explore">Browse foods</a>' +
         "</div>" +
       "</section>" +
@@ -39,9 +39,17 @@
               '<div class="stat-icon" style="margin:0 auto var(--s-2)">' + personaIcon(u.persona) + "</div>" +
               "<strong>" + App.UI.esc(u.persona) + "</strong>" +
               '<div class="muted small">' + App.UI.esc(u.name) + "</div>" +
+              '<div class="mt-2"><span class="badge ' + (App.RBAC.isStaff(u) ? "orange" : "green") + '">' + App.UI.esc(App.RBAC.label(u.role)) + "</span></div>" +
             "</button>"
           ).join("") +
+          '<div class="card center" style="border-style:dashed">' +
+            '<div class="stat-icon" style="margin:0 auto var(--s-2)">🛠️</div>' +
+            "<strong>Content / Admin staff</strong>" +
+            '<div class="muted small">Data &amp; review tooling</div>' +
+            '<div class="mt-2"><span class="badge grey">Staff</span></div>' +
+          "</div>" +
         "</div>" +
+        '<p class="muted small mt-3">Staff demo accounts (admin) are in the 🎭 Demo roles menu in the header.</p>' +
       "</section>" +
 
       '<section class="mt-5">' +
@@ -57,6 +65,7 @@
     return '<div><div class="badge green">Step ' + n + "</div><h4 class=\"mt-2\">" + title + '</h4><p class="muted small">' + body + "</p></div>";
   }
   function personaIcon(persona) {
+    if (/nutrition/i.test(persona)) return "🩺";
     if (/kidney/i.test(persona)) return "🫘";
     if (/diabet/i.test(persona)) return "🩸";
     if (/vegetar/i.test(persona)) return "🌱";

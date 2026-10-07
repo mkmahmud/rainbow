@@ -32,7 +32,7 @@ App.State = (function () {
       feedback: JSON.parse(JSON.stringify(App.DATA.feedback)),
       foodOverlay: { added: [], edited: {}, retired: [] },
       plans: {},
-      reviews: {},
+      reviews: JSON.parse(JSON.stringify(App.DATA.seedReviews || {})),
       contentEdits: {},
       subscription: {},       // userId -> { plan, since }
       settings: { language: "en" },
@@ -55,10 +55,14 @@ App.State = (function () {
         parsed.recent = parsed.recent || {};
         parsed.bookmarks = parsed.bookmarks || {};
         parsed.plans = parsed.plans || {};
-        parsed.reviews = parsed.reviews || {};
+        parsed.reviews = parsed.reviews || JSON.parse(JSON.stringify(App.DATA.seedReviews || {}));
         parsed.subscription = parsed.subscription || {};
         parsed.settings = parsed.settings || { language: "en" };
         parsed.contentEdits = parsed.contentEdits || {};
+        // Migrate legacy roles ("user" -> "member") in place.
+        parsed.users.forEach((u) => {
+          if (!u.role || u.role === "user") u.role = "member";
+        });
         data = parsed;
         return;
       }
@@ -100,7 +104,7 @@ App.State = (function () {
       return { ok: false, error: "An account with this email already exists." };
     }
     const user = {
-      id: uid("u"), name, email, password, role: role || "user", premium: false,
+      id: uid("u"), name, email, password, role: role || "member", premium: false,
       profile: null,
     };
     data.users.push(user);
@@ -254,6 +258,13 @@ App.State = (function () {
   function setPlan(userId, plan) { data.plans[userId] = plan; emit(); }
   function getReview(userId) { return data.reviews[userId] || null; }
   function setReview(userId, review) { data.reviews[userId] = review; emit(); }
+  /* All submitted chart reviews, newest first — used by the nutritionist queue. */
+  function allReviews() {
+    return Object.keys(data.reviews || {})
+      .map((userId) => ({ userId: userId, user: userById(userId), review: data.reviews[userId] }))
+      .filter((r) => r.user)
+      .sort((a, b) => String((b.review.requestedAt) || "").localeCompare(String((a.review.requestedAt) || "")));
+  }
 
   /* ---------- Subscription ---------- */
   function isPremium(userId) {
@@ -301,7 +312,7 @@ App.State = (function () {
     bookmarks, toggleBookmark, isBookmarked, recentlyViewed, addRecent,
     logs, addLog, removeLog, logsByDate, ensureSeedLogs,
     feedback, addFeedback, setFeedbackStatus,
-    getPlan, setPlan, getReview, setReview,
+    getPlan, setPlan, getReview, setReview, allReviews,
     isPremium, setPremium, subscription,
     contentEdit, setContentEdit,
     language, setLanguage,

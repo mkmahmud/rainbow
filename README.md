@@ -40,7 +40,19 @@ into any persona instantly — no password needed:
 | Vegetarian + heart (Nusrat) | Hard exclusions, plant-based swaps, low-sodium |
 | Budget-conscious (Jashim) | Cheapest-first ranking, Bangla UI |
 | Premium (Ayesha) | 7-day chart + nutritionist review flow |
+| Nutritionist (Sabrina) | Diet-chart review queue, reply to members |
 | Content admin (Admin) | Food CRUD, review queue, guidance & feedback |
+
+---
+
+## Roles & access (RBAC)
+
+Three roles, defined in `js/rbac.js`: **member** (personal nutrition dashboard),
+**nutritionist** (diet-chart review queue) and **admin** (content console). Everyone
+signs in to the same `#/dashboard`, which renders the view for their role; routes and
+navigation are filtered by named capabilities. Premium is a per-user entitlement flag,
+not a role. `#/home` and `#/admin` are legacy aliases that redirect to `#/dashboard`.
+
 
 Seeded login also works: `rahim@demo.bd` / `demo1234` (admin: `admin@demo.bd` / `admin1234`).
 
@@ -76,11 +88,12 @@ Seeded login also works: `rahim@demo.bd` / `demo1234` (admin: `admin@demo.bd` / 
 ```
 index.html            app shell + script loading order
 css/  tokens.css  base.css  components.css  pages.css
-js/   i18n.js state.js ui.js charts.js auth.js profile.js engine.js router.js app.js
-js/pages/  landing auth home explore food-detail bookmarks onboarding profile
+js/   i18n.js state.js ui.js charts.js auth.js rbac.js profile.js engine.js router.js app.js
+js/dashboards/  member.js nutritionist.js admin.js
+js/pages/  landing auth explore food-detail bookmarks onboarding profile
            recommendations diet-chart dashboard premium admin help settings
 data/ content.js conditions.js rules.js foods.js substitutions.js users.js
-      mealPlans.js feedback.js
+      mealPlans.js feedback.js reviews.js
 docs/ project-requirements.md       (PRD)
       prototype-build-phases.md     (this build plan)
 ```

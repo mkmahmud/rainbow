@@ -21,9 +21,11 @@
       '<div class="card"><div class="card-title"><h3>Account</h3></div>' +
         '<div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Name</span><strong>' + esc(user.name) + "</strong></div>" +
         '<div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Email</span><strong>' + esc(user.email) + "</strong></div>" +
-        '<div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Role</span><strong>' + esc(user.role) + "</strong></div>" +
+        '<div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">Role</span><strong>' + esc(App.RBAC.label(user.role)) + "</strong></div>" +
         '<div class="row between" style="padding:6px 0"><span class="muted">Tier</span><strong>' + (user.premium ? "⭐ Premium" : "Free") + "</strong></div>" +
-        '<div class="row mt-4"><a class="btn btn-outline" href="#/profile">Edit profile</a><a class="btn btn-outline" href="#/premium">' + esc(t("nav_premium")) + "</a></div>" +
+        (App.RBAC.hasRole(user, "member")
+          ? '<div class="row mt-4"><a class="btn btn-outline" href="#/profile">Edit profile</a><a class="btn btn-outline" href="#/premium">' + esc(t("nav_premium")) + "</a></div>"
+          : "") +
       "</div>" +
 
       '<div class="card"><div class="card-title"><h3>Demo data</h3></div>' +

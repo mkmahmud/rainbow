@@ -194,5 +194,5 @@
     void m;
   }
 
-  App.Router.register("/diet", { render: render, mount: mount, auth: true, requiresProfile: true, title: "Diet chart" });
+  App.Router.register("/diet", { render: render, mount: mount, auth: true, roles: ["member"], requiresProfile: true, title: "Diet chart" });
 })();

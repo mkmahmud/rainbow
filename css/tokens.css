@@ -70,7 +70,19 @@
   --fs-2xl: 32px;
 
   --header-h: 64px;
+  --topbar-h: 64px;
+  --sidebar-w: 264px;
   --content-max: 1180px;
+
+  /* App shell (authenticated) */
+  --sidebar-bg: #0e211a;
+  --sidebar-bg-2: #0a1a14;
+  --sidebar-text: #9db3a8;
+  --sidebar-text-strong: #f3f7f5;
+  --sidebar-line: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active: rgba(102, 187, 106, 0.18);
+  --sidebar-active-text: #9ae6a9;
 }
 
 /* Nutrient series used by charts + legend */

@@ -114,7 +114,8 @@
       '<div class="grid auto-220">' + list.map((f) => App.FoodCard.card(f, profile, userId)).join("") + "</div>";
   }
 
-  function render() {
+  function render(params, query) {
+    if (query && typeof query.q === "string") state.q = query.q;
     return '<div class="container stack">' +
       '<div class="page-head"><div><h1>' + esc(t("nav_explore")) + "</h1>" +
       '<div class="subtitle">Search local foods and see full nutrition, condition flags, cost and alternatives.</div></div></div>' +

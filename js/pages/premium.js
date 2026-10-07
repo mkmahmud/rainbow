@@ -115,5 +115,5 @@
     });
   }
 
-  App.Router.register("/premium", { render: render, mount: mount, auth: true, title: "Premium" });
+  App.Router.register("/premium", { render: render, mount: mount, auth: true, roles: ["member"], title: "Premium" });
 })();

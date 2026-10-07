@@ -105,5 +105,5 @@
     });
   }
 
-  App.Router.register("/recommendations", { render: render, mount: mount, auth: true, requiresProfile: true, title: "Recommendations" });
+  App.Router.register("/recommendations", { render: render, mount: mount, auth: true, roles: ["member"], requiresProfile: true, title: "Recommendations" });
 })();
