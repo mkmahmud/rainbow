@@ -1,0 +1,26 @@
+/* Page-specific tweaks + print styles. */
+
+/* Hero accent for landing is defined in components.css; add a little rhythm. */
+.hero + .grid { align-items: stretch; }
+
+/* Food cards keep consistent height within a row. */
+.grid.auto-220 > .card { display: flex; flex-direction: column; }
+
+/* Table action buttons shouldn't wrap awkwardly. */
+table.table .btn + .btn { margin-left: 2px; }
+
+/* Selected onboarding goal card uses inline styles, keep hover subtle. */
+[data-goal].card { transition: transform .1s ease, box-shadow .1s ease, border-color .1s ease; }
+[data-goal].card:hover { transform: translateY(-2px); }
+
+/* Review status stepper wraps nicely on mobile. */
+.stepper .step { white-space: nowrap; }
+
+/* Print-friendly diet chart */
+@media print {
+  .site-header, .site-footer, .no-print, .toast-wrap, .disclaimer { display: none !important; }
+  body { background: #fff; }
+  .card { box-shadow: none; border-color: #ccc; break-inside: avoid; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .container { max-width: 100%; }
+}

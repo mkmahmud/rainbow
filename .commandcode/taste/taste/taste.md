@@ -1,0 +1,12 @@
+# Taste
+- Prefers project planning/requirements documents that stay at the requirements level — explicitly wants the "how the idea will work" and requirements captured, NOT the development or coding phase. Confidence: 0.7
+- Prefers documentation deliverables delivered as markdown (`.md`) files placed inside a `docs` folder. Confidence: 0.6
+- Expects the agent to research the topic online to resolve inconsistent/"messy" source data and ground the plan in external sources, rather than taking provided documents at face value. Confidence: 0.55
+- Prefers requirements documents stripped down to requirements only — wants cost/budget sections, and deployment/maintenance/handover sections removed, keeping strictly the project-requirement content. Confidence: 0.6
+- Prefers generated documents (e.g., PDFs) rendered with a simple, minimal visual style rather than elaborate design. Confidence: 0.5
+- Likes deliverables provided in PDF form (in addition to markdown). Confidence: 0.5
+- Before implementation, wants the work broken into an explicit, ordered **build-phase plan** written to a markdown doc (goal/deliverables/tasks/acceptance criteria per phase) — and explicitly asks for the plan INSTEAD of the agent starting to write code. Confidence: 0.65
+- For prototypes, prefers a plain vanilla stack — simple HTML, CSS, and JS with no framework, no build step, no npm — rather than a modern component framework. Confidence: 0.5
+- Prefers a working prototype driven by fully static/hardcoded data that actually functions end-to-end, rather than partially mocked-up or non-functional UI. Confidence: 0.5
+- Wants agreed plans then executed strictly in order, "phase by phase" from phase one — sequential implementation following the build plan, not all at once. Confidence: 0.55
+- Wants the resulting app/prototype to have a "standard and modern" design — polished, up-to-date UI. Confidence: 0.5
