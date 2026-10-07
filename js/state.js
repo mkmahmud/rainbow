@@ -213,7 +213,7 @@ App.State = (function () {
   /* ---------- Intake logs ---------- */
   function logs(userId) { return data.logs[userId] || (data.logs[userId] = []); }
   function addLog(userId, entry) {
-    logs(userId).push(Object.assign({ id: uid("log"), date: todayISO() }, entry));
+    logs(userId).push(Object.assign({ id: uid("log"), date: todayISO(), at: new Date().toISOString() }, entry));
     emit();
   }
   function removeLog(userId, logId) {
@@ -235,7 +235,7 @@ App.State = (function () {
       plan.items.forEach((item, idx) => {
         // Slight day-to-day variation, skip a couple of items on some days.
         if (d === 3 && idx % 3 === 0) return;
-        out.push({ id: uid("log"), foodId: item.foodId, grams: item.grams, slot: item.slot, date: date });
+        out.push({ id: uid("log"), foodId: item.foodId, grams: item.grams, slot: item.slot, date: date, at: date + "T" + String(7 + (idx % 4)).padStart(2, "0") + ":30:00" });
       });
     }
     data.logs[userId] = out;

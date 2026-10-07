@@ -4,6 +4,7 @@ window.App = window.App || {};
 App.Router = (function () {
   const routes = [];
   let currentPath = "";
+  let currentTitle = "";
 
   function register(path, config) {
     routes.push(Object.assign({ path: normalize(path) }, config));
@@ -95,6 +96,8 @@ App.Router = (function () {
 
     main.innerHTML = route.render ? route.render(params, query) : "";
     if (route.mount) route.mount(params, query, main);
+    currentTitle = route.title || "";
+    App.Shell.setHeading(path, currentTitle);
     App.Shell.markActive(path);
     App.UI.scrollTop();
     document.title = (route.title ? route.title + " · " : "") + "Rainbow Food List";
@@ -108,6 +111,7 @@ App.Router = (function () {
 
   function refresh() { render(); }
   function path() { return currentPath; }
+  function title() { return currentTitle; }
 
-  return { register, go, start, refresh, path, normalize };
+  return { register, go, start, refresh, path, title, normalize };
 })();

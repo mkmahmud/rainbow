@@ -86,5 +86,32 @@ App.Charts = (function () {
       grid + rects + "</svg>";
   }
 
-  return { ring, lineChart, bars };
+  /* Semicircular gauge with a big centre value. */
+  function gauge(value, max, opts) {
+    opts = opts || {};
+    const w = opts.width || 280;
+    const h = opts.height || 158;
+    const stroke = opts.stroke || 16;
+    const cx = w / 2;
+    const cy = h - 16;
+    const r = Math.min((w - stroke * 2) / 2, h - stroke - 18);
+    const pct = max > 0 ? Math.max(0, Math.min(value / max, 1)) : 0;
+    const color = opts.color || (pct > 0.95 ? "var(--danger)" : pct > 0.8 ? "var(--orange-600)" : "var(--green-600)");
+    const a = Math.PI * (1 - pct);
+    const x = cx + r * Math.cos(a);
+    const y = cy - r * Math.sin(a);
+    const track = "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 0 1 " + (cx + r) + " " + cy;
+    const arc = "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 " + (pct > 0.5 ? 1 : 0) + " 1 " + x + " " + y;
+    const center = opts.center !== undefined ? opts.center : App.I18N.fmtNum(value) + " " + (opts.unit || "");
+    return '<svg viewBox="0 0 ' + w + " " + h + '" width="100%" role="img" aria-label="' + App.UI.esc(opts.aria || "gauge") + '">' +
+      '<path d="' + track + '" fill="none" stroke="#eef2f6" stroke-width="' + stroke + '" stroke-linecap="round"/>' +
+      '<path d="' + arc + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round"/>' +
+      '<text x="' + cx + '" y="' + (cy - 30) + '" text-anchor="middle" font-size="' + Math.round(w * 0.13) + '" font-weight="700" fill="var(--text)">' + App.UI.esc(center) + "</text>" +
+      (opts.sub ? '<text x="' + cx + '" y="' + (cy - 8) + '" text-anchor="middle" font-size="' + Math.round(w * 0.052) + '" fill="var(--muted)">' + App.UI.esc(opts.sub) + "</text>" : "") +
+      (opts.minLabel !== undefined ? '<text x="' + (cx - r) + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + App.UI.esc(opts.minLabel) + "</text>" : "") +
+      (opts.maxLabel !== undefined ? '<text x="' + (cx + r) + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + App.UI.esc(opts.maxLabel) + "</text>" : "") +
+    "</svg>";
+  }
+
+  return { ring, lineChart, bars, gauge };
 })();

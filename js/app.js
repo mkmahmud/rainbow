@@ -1,5 +1,5 @@
 /* Bootstrap + shell. Guests get the marketing header; signed-in users get the
-   app shell (persistent sidebar + topbar with global search). */
+   app shell (persistent light sidebar + greeting topbar with global search). */
 window.App = window.App || {};
 
 App.Shell = (function () {
@@ -10,17 +10,34 @@ App.Shell = (function () {
   function initials(name) {
     return (name || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   }
+  function firstName(n) { return (n || "").split(" ")[0]; }
+  function greeting() {
+    const h = new Date().getHours();
+    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+  }
 
   /* ---------- shared fragments ---------- */
-  function rolesMenu() {
-    const t = App.I18N.t;
+  function demoRoleItems() {
+    return App.Auth.roleOptions().map((r) =>
+      '<button class="menu-item" data-login-as="' + r.id + '"><strong>' + esc(r.name) + '</strong><span class="muted small">&nbsp;· ' + esc(r.persona) + "</span></button>"
+    ).join("");
+  }
+
+  function notifications(user) {
+    const items = App.State.logs(user.id).slice(-4).reverse();
+    const rows = items.length
+      ? items.map((l) => {
+          const f = App.State.foodById(l.foodId);
+          if (!f) return "";
+          return '<div class="notif-item"><span class="notif-ic">' + icon("spark", 15) + "</span>" +
+            "<div><strong>" + esc("Logged " + App.I18N.name(f)) + "</strong><small>" + l.grams + " g · " + esc(l.slot) + "</small></div></div>";
+        }).join("")
+      : '<div class="muted small" style="padding:12px">' + esc("You're all caught up.") + "</div>";
     return '<div class="menu">' +
-      '<button class="chip static" data-roles-toggle aria-haspopup="true" aria-expanded="false">' + icon("users", 16) + " " + esc(t("role_switcher")) + "</button>" +
-      '<div class="menu-panel" data-roles-panel hidden>' +
-        '<div class="menu-title">' + esc(t("role_switcher")) + "</div>" +
-        App.Auth.roleOptions().map((r) =>
-          '<button class="menu-item" data-login-as="' + r.id + '"><strong>' + esc(r.name) + '</strong><span class="muted small">&nbsp;· ' + esc(r.persona) + "</span></button>"
-        ).join("") +
+      '<button class="bell" data-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Notifications">' +
+        icon("bell", 19) + (items.length ? '<span class="bell-dot"></span>' : "") + "</button>" +
+      '<div class="menu-panel menu-panel-wide" data-menu-panel hidden>' +
+        '<div class="menu-title">' + esc("Notifications") + "</div>" + rows +
       "</div>" +
     "</div>";
   }
@@ -30,10 +47,15 @@ App.Shell = (function () {
     const user = App.State.currentUser();
     const lang = App.I18N.getLang();
     return '<div class="menu">' +
-      '<button class="avatar" data-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="' + esc("Account menu for " + user.name) + '" title="' + esc(user.name) + '">' + esc(initials(user.name)) + "</button>" +
+      '<button class="user-chip" data-menu-toggle aria-haspopup="true" aria-expanded="false">' +
+        '<span class="avatar">' + esc(initials(user.name)) + "</span>" +
+        '<span class="user-chip-meta"><strong>' + esc(user.name) + "</strong><small>" + esc(App.RBAC.label(user.role)) + "</small></span>" +
+        '<span class="chev">' + icon("chevron", 16) + "</span>" +
+      "</button>" +
       '<div class="menu-panel" data-menu-panel hidden>' +
-        '<div class="menu-title">' + esc(user.name) + (user.premium ? " ⭐" : "") + "</div>" +
-        '<div class="menu-role">' + esc(App.RBAC.label(user.role)) + "</div>" +
+        '<div class="menu-title">' + esc(t("role_switcher")) + "</div>" +
+        demoRoleItems() +
+        '<div class="menu-sep"></div>' +
         (App.RBAC.hasRole(user, "member") ? '<a class="menu-item" href="#/profile">' + icon("profile", 17) + " " + esc(t("nav_profile")) + "</a>" : "") +
         '<a class="menu-item" href="#/settings">' + icon("settings", 17) + " " + esc(t("nav_settings")) + "</a>" +
         '<a class="menu-item" href="#/help">' + icon("help", 17) + " " + esc(t("nav_help")) + "</a>" +
@@ -52,7 +74,6 @@ App.Shell = (function () {
         '<span>' + esc(t("appName")) + "<small>" + esc(t("tagline")) + "</small></span>" +
       "</a>" +
       '<div class="header-actions">' +
-        rolesMenu() +
         '<a class="btn btn-ghost" href="#/login">' + esc(t("nav_login")) + "</a>" +
         '<a class="btn btn-primary" href="#/register">' + esc(t("nav_register")) + "</a>" +
       "</div>" +
@@ -62,7 +83,6 @@ App.Shell = (function () {
   /* ---------- app shell (authed) ---------- */
   function sidebarHtml() {
     const t = App.I18N.t;
-    const user = App.State.currentUser();
     const path = App.Router.path();
     const group = (labelKey, items) =>
       '<div class="nav-group"><div class="nav-label">' + esc(t(labelKey)) + "</div>" +
@@ -77,20 +97,29 @@ App.Shell = (function () {
         group("nav_group_menu", App.Auth.navItems()) +
         group("nav_group_account", App.Auth.accountItems()) +
       "</nav>" +
+      promoCard() +
       '<div class="sidebar-foot">' +
-        '<div class="user-card">' +
-          '<span class="avatar">' + esc(initials(user.name)) + "</span>" +
-          '<span class="user-meta"><strong>' + esc(user.name) + "</strong><small>" + esc(App.RBAC.label(user.role)) + (user.premium ? " · Premium" : "") + "</small></span>" +
-        "</div>" +
         '<button class="side-link side-signout" data-logout>' + icon("logout", 18) + "<span>" + esc(t("nav_logout")) + "</span></button>" +
       "</div>";
+  }
+
+  function promoCard() {
+    const user = App.State.currentUser();
+    if (!App.RBAC.hasRole(user, "member") || user.premium) return "";
+    return '<div class="sidebar-promo">' +
+      '<div class="promo-emoji">🥗</div>' +
+      "<h4>" + esc("Start your health journey") + "</h4>" +
+      "<p>" + esc("Unlock a 7-day chart and a nutritionist review with Premium.") + "</p>" +
+      '<a class="btn btn-block" href="#/premium">' + esc("Upgrade now") + "</a>" +
+    "</div>";
   }
 
   function sideLink(item, path) {
     const route = item.route.replace("#", "");
     const active = path === route;
     return '<a class="side-link' + (active ? " active" : "") + '" href="' + item.route + '" data-route="' + item.route + '"' +
-      (active ? ' aria-current="page"' : "") + ">" + icon(item.icon) + "<span>" + esc(item.label) + "</span></a>";
+      (active ? ' aria-current="page"' : "") + ">" + icon(item.icon) + "<span>" + esc(item.label) + "</span>" +
+      (item.badge ? '<span class="count">' + item.badge + "</span>" : "") + "</a>";
   }
 
   function topbarHtml() {
@@ -98,16 +127,25 @@ App.Shell = (function () {
     const t = App.I18N.t;
     return '<div class="topbar-inner">' +
       '<button class="topbar-menu" data-sidebar-toggle aria-label="Open navigation" aria-expanded="false">' + icon("menu", 20) + "</button>" +
+      '<div class="topbar-head" data-topbar-head></div>' +
       '<form class="topbar-search" data-search role="search">' +
         '<span class="search-ic">' + icon("search", 18) + "</span>" +
-        '<input class="search-input" type="search" placeholder="' + esc(t("search_foods")) + '" aria-label="' + esc(t("search_foods")) + '" />' +
+        '<input class="search-input" type="search" placeholder="' + esc(t("search_anything")) + '" aria-label="' + esc(t("search_anything")) + '" />' +
       "</form>" +
-      '<div class="header-actions">' +
-        rolesMenu() +
-        (App.RBAC.isStaff(user) ? '<span class="role-badge">' + esc(App.RBAC.label(user.role)) + "</span>" : "") +
-        accountMenu() +
-      "</div>" +
+      '<div class="header-actions">' + notifications(user) + accountMenu() + "</div>" +
     "</div>";
+  }
+
+  function setHeading(path, title) {
+    const el = document.querySelector("[data-topbar-head]");
+    if (!el) return;
+    const user = App.State.currentUser();
+    if (path === "/dashboard" && user) {
+      el.innerHTML = '<div class="greet-title">' + esc(greeting() + ", " + firstName(user.name) + "!") + "</div>" +
+        '<div class="greet-sub">' + esc(App.I18N.t("greet_sub")) + "</div>";
+    } else {
+      el.innerHTML = title ? '<div class="greet-title">' + esc(title) + "</div>" : "";
+    }
   }
 
   function footerHtml() {
@@ -144,6 +182,7 @@ App.Shell = (function () {
       setHeader("site-header", headerHtml());
       if (footer) footer.innerHTML = footerHtml();
     }
+    setHeading(App.Router.path(), App.Router.title());
     markActive(App.Router.path());
   }
 
@@ -238,7 +277,7 @@ App.Shell = (function () {
     });
   }
 
-  return { render, markActive, closeAllMenus, toggleSidebar, bind };
+  return { render, markActive, setHeading, closeAllMenus, toggleSidebar, bind };
 })();
 
 (function bootstrap() {

@@ -37,7 +37,7 @@ App.Auth = (function () {
     }
     if (role === App.RBAC.ROLES.NUTRITIONIST) {
       return [
-        { route: "#/dashboard", label: t("nav_reviews"), icon: "users" },
+        { route: "#/dashboard", label: t("nav_reviews"), icon: "users", badge: pendingReviews() },
         { route: "#/explore", label: t("nav_explore"), icon: "search" },
       ];
     }
@@ -47,6 +47,10 @@ App.Auth = (function () {
       { route: "#/recommendations", label: t("nav_recommend"), icon: "recommend" },
       { route: "#/diet", label: t("nav_diet"), icon: "diet" },
     ];
+  }
+
+  function pendingReviews() {
+    return App.State.allReviews().filter((r) => r.review.status !== "reviewed").length;
   }
 
   function accountItems() {
