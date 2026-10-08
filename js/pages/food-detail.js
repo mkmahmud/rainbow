@@ -60,6 +60,38 @@
     }).join("") + "</div>";
   }
 
+  function priceHtml(food) {
+    const price = App.State.latestPrice(food.id);
+    if (price) {
+      return '<span class="badge grey">৳ ' + App.I18N.fmtNum(price.priceMin) + "–" + App.I18N.fmtNum(price.priceMax) + " / " + esc(price.unit) + "</span>";
+    }
+    return '<span class="badge grey">≈ ৳ ' + App.I18N.fmtNum(Math.round(App.State.pricePer100g(food))) + " / 100 g (est.)</span>";
+  }
+
+  function priceCard(food) {
+    const price = App.State.latestPrice(food.id);
+    if (!price) {
+      return '<div class="card"><div class="card-title"><h3>Market price</h3></div>' +
+        '<p class="muted small">No market data yet. Estimated ৳ ' + App.I18N.fmtNum(Math.round(App.State.pricePer100g(food))) + " per 100 g.</p></div>";
+    }
+    const per100 = App.State.pricePer100g(food);
+    return '<div class="card"><div class="card-title"><h3>Market price</h3><span class="badge grey">' + esc(price.source || "market") + "</span></div>" +
+      '<div class="market-price">৳ ' + App.I18N.fmtNum(price.priceMin) + " – " + App.I18N.fmtNum(price.priceMax) + " <small class=\"muted\">/ " + esc(price.unit) + "</small></div>" +
+      '<div class="market-meta mt-2">' + esc(price.location) + " · Updated " + esc(App.UI.fmtDate(price.date)) + "</div>" +
+      '<div class="muted small mt-3">≈ ৳ ' + App.I18N.fmtNum(Math.round(per100)) + " per 100 g · a " + food.portionLabel + " costs about ৳ " + App.I18N.fmtNum(Math.round((per100 * food.portionGrams) / 100)) + "</div></div>";
+  }
+
+  function notesHtml(food) {
+    const notes = App.DATA.foodNotesFor(food);
+    const list = (items, cls) => items.length
+      ? "<ul class='small' style='margin:6px 0 0;padding-left:18px'>" + items.map((x) => '<li class="' + cls + '">' + esc(x) + "</li>").join("") + "</ul>"
+      : '<p class="muted small">—</p>';
+    return '<div class="grid cols-2" style="align-items:start">' +
+      '<div class="card"><div class="card-title"><h3>Benefits</h3></div>' + list(notes.benefits, "") + "</div>" +
+      '<div class="card"><div class="card-title"><h3>Considerations</h3></div>' + list(notes.considerations, "") + "</div>" +
+    "</div>";
+  }
+
   function alternativesHtml(food, profile) {
     const alt = App.Engine.alternatives(food.id, profile);
     if (!alt.length) return '<p class="muted small">No alternatives found.</p>';
@@ -98,8 +130,11 @@
       '<div class="row" style="gap:6px">' +
         (food.isPlantBased ? '<span class="badge green">🌱 Plant-based</span>' : '<span class="badge orange">Animal product</span>') +
         (cost ? '<span class="badge grey">' + esc(App.I18N.name(cost)) + "</span>" : "") +
+        priceHtml(food) +
         '<span class="badge">Source: ' + esc(food.source || "FCTB") + "</span>" +
       "</div>" +
+
+      notesHtml(food) +
 
       '<div class="grid cols-2">' +
         '<div class="card">' +
@@ -114,9 +149,12 @@
         "</div>" +
       "</div>" +
 
-      '<div class="card">' +
-        '<div class="card-title"><h3>' + esc(t("detail_alternatives")) + '</h3><span class="muted small">' + esc("Similar nutrition, plant-based or cheaper options") + "</span></div>" +
-        alternativesHtml(food, profile) +
+      '<div class="grid cols-2" style="align-items:start">' +
+        '<div class="card">' +
+          '<div class="card-title"><h3>' + esc(t("detail_alternatives")) + '</h3><span class="muted small">' + esc("Similar nutrition, plant-based or cheaper options") + "</span></div>" +
+          alternativesHtml(food, profile) +
+        "</div>" +
+        priceCard(food) +
       "</div>" +
 
       App.UI.disclaimer("disc_general") +

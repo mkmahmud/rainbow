@@ -28,6 +28,7 @@
       '<div class="page-head"><div><h1>' + esc(t("nav_diet")) + "</h1>" +
       '<div class="subtitle">A daily plan built from your safe, ranked foods — with portions.</div></div>' +
       '<div class="row no-print">' +
+        '<a class="btn btn-outline" href="#/planner">🤖 ' + esc(t("nav_planner")) + "</a>" +
         '<button class="btn btn-outline" id="dc-print">🖨️ Print</button>' +
         '<button class="btn btn-accent" id="dc-regen">↻ ' + esc(t("btn_regenerate")) + "</button>" +
       "</div></div>" +
@@ -194,5 +195,5 @@
     void m;
   }
 
-  App.Router.register("/diet", { render: render, mount: mount, auth: true, roles: ["member"], requiresProfile: true, title: "Diet chart" });
+  App.Router.register("/diet", { render: render, mount: mount, auth: true, roles: ["member"], requiresProfile: true, title: "My Diet Chart" });
 })();

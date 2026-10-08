@@ -105,3 +105,88 @@ App.DATA.foods = [
   { id: "green_tea", nameEn: "Green Tea (plain)", nameBn: "গ্রিন টি", emoji: "🍵", category: "beverage", portionLabel: "1 cup (240 ml)", portionGrams: 240, per100g: { energy: 1, protein: 0, carbs: 0.2, fat: 0, fiber: 0 }, micros: { sodium: 1, potassium: 8, phosphorus: 0, satFat: 0, sugar: 0, glycemic: null }, costTier: "low", isPlantBased: true, allergens: [], source: "USDA" },
   { id: "coconut_water", nameEn: "Coconut Water", nameBn: "ডাবের পানি", emoji: "🥥", category: "beverage", portionLabel: "1 cup (240 ml)", portionGrams: 240, per100g: { energy: 19, protein: 0.7, carbs: 3.7, fat: 0.2, fiber: 1.1 }, micros: { sodium: 105, potassium: 250, phosphorus: 20, satFat: 0.2, sugar: 2.6, glycemic: 40 }, costTier: "low", isPlantBased: true, allergens: [], source: "USDA" },
 ];
+
+/* Plain-language benefits & considerations shown on the Food Explorer detail
+   view. Category copy applies unless a food has its own entry below. */
+App.DATA.foodNotes = {
+  categories: {
+    grains: {
+      benefits: ["Everyday energy from carbohydrates", "Wholegrain types add fibre for gut and blood-sugar health"],
+      considerations: ["Refined grains raise blood sugar quickly — control the portion", "Balance with protein, pulses and vegetables"],
+    },
+    veg: {
+      benefits: ["Low in energy, rich in fibre and micronutrients", "Helps fill the plate without many calories"],
+      considerations: ["Cooking method matters — frying adds a lot of oil", "Potato and pumpkin are higher in carbohydrate"],
+    },
+    leafy: {
+      benefits: ["Very high in fibre, vitamins and minerals", "Low energy density — helpful for weight management"],
+      considerations: ["High in potassium — follow your limit if you have kidney disease", "Cook lightly to keep nutrients"],
+    },
+    fruit: {
+      benefits: ["Natural vitamins, antioxidants and fibre", "A good swap for sugary snacks"],
+      considerations: ["Natural sugars still count — keep to 1–2 portions a day", "Banana and mango are higher in sugar and potassium"],
+    },
+    legume: {
+      benefits: ["Excellent plant protein and fibre", "Low cost and filling — great for tight budgets"],
+      considerations: ["Contains phosphorus and potassium — mind CKD limits", "Soak and cook well for easier digestion"],
+    },
+    fish: {
+      benefits: ["High-quality protein and omega-3 fats", "Heart-friendly when not fried"],
+      considerations: ["Some fish are high in fat (ilish) — watch the portion", "Avoid if you have a fish allergy"],
+    },
+    meat: {
+      benefits: ["Complete protein, iron and B vitamins", "Helps meet protein targets"],
+      considerations: ["Choose lean cuts and remove the skin", "Limit red meat and avoid frying"],
+    },
+    egg: {
+      benefits: ["Complete, affordable protein", "Rich in vitamins and choline"],
+      considerations: ["The yolk is high in cholesterol and phosphorus — limit if advised", "Cook thoroughly"],
+    },
+    dairy: {
+      benefits: ["Calcium, protein and B vitamins", "Supports bone health"],
+      considerations: ["High in phosphorus and saturated fat — follow CKD/heart limits", "Choose unsweetened where possible"],
+    },
+    nuts: {
+      benefits: ["Healthy unsaturated fats, protein and fibre", "Satisfying in small amounts"],
+      considerations: ["Very energy-dense — keep portions small", "Common allergen; high in potassium and phosphorus"],
+    },
+    oil: {
+      benefits: ["Supplies essential fatty acids and helps absorb vitamins"],
+      considerations: ["Very high in calories — measure by the teaspoon", "Prefer unsaturated oils; keep coconut low"],
+    },
+    sweet: {
+      benefits: ["Quick energy — best kept occasional"],
+      considerations: ["High in added sugar — strongly limit with diabetes", "Low in nutrients; replace with fruit"],
+    },
+    beverage: {
+      benefits: ["Hydration and some antioxidants (tea)"],
+      considerations: ["Sweetened drinks add sugar and empty calories", "Watch caffeine close to bedtime"],
+    },
+  },
+  foods: {
+    rice_white: { considerations: ["High glycemic index (73) — pair with dal, vegetables or fish to slow the sugar rise"] },
+    rice_brown: { benefits: ["More fibre than white rice, with a lower glycemic index"] },
+    egg: { benefits: ["One of the cheapest complete proteins"], considerations: ["The yolk is high in cholesterol, phosphorus and saturated fat"] },
+    chicken_breast: { benefits: ["Lean, high-protein, low-fat choice"] },
+    palong: { benefits: ["Rich in iron, folate and vitamin K"], considerations: ["Very high potassium and oxalates — limit with CKD or kidney stones"] },
+    banana: { considerations: ["High in sugar and potassium — one a day is plenty, especially with diabetes or CKD"] },
+    guava: { benefits: ["Exceptionally high in fibre and vitamin C"] },
+    mango: { considerations: ["High natural sugar — treat it like a sweet"] },
+    ilish: { considerations: ["Very high in fat and calories — a good omega-3 source but keep the portion small"] },
+    mola: { benefits: ["Eaten whole, so rich in calcium and iron"] },
+    masoor: { benefits: ["Everyday plant protein and iron", "Very low glycemic index (32) — gentle on blood sugar"] },
+    yogurt: { considerations: ["Sweetened versions add sugar — prefer plain"] },
+  },
+};
+
+/* Resolve the notes for a food, falling back to its category copy. */
+App.DATA.foodNotesFor = function (food) {
+  const notes = App.DATA.foodNotes;
+  if (!food) return { benefits: [], considerations: [] };
+  const base = notes.categories[food.category] || { benefits: [], considerations: [] };
+  const own = notes.foods[food.id] || {};
+  return {
+    benefits: (own.benefits || []).concat(base.benefits || []),
+    considerations: (own.considerations || []).concat(base.considerations || []),
+  };
+};

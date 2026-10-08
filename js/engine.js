@@ -37,6 +37,11 @@ App.Engine = (function () {
     return out;
   }
 
+  /* A food the user explicitly listed as disliked in onboarding. */
+  function isDisliked(food, profile) {
+    return !!(profile && (profile.dislikedFoods || []).indexOf(food.id) >= 0);
+  }
+
   function exclusion(food, profile) {
     if (!profile) return null;
     const allergies = profile.allergies || [];
@@ -127,6 +132,7 @@ App.Engine = (function () {
     pool.forEach((food) => {
       const reason = exclusion(food, profile);
       if (reason) { excludedList.push({ food: food, reason: reason }); return; }
+      if (isDisliked(food, profile)) return;
       if (opts.plantOnly && !food.isPlantBased) return;
       if (opts.category && food.category !== opts.category) return;
       const r = score(food, profile, targets, opts);
@@ -173,7 +179,7 @@ App.Engine = (function () {
       seen[entry.id] = true;
       const f = App.State.foodById(entry.id);
       if (!f) return;
-      if (exclusion(f, profile)) return;
+      if (exclusion(f, profile) || isDisliked(f, profile)) return;
       out.push({ food: f, why: entry.why });
     });
 
@@ -182,7 +188,7 @@ App.Engine = (function () {
       App.State.allFoods().forEach((f) => {
         if (out.length >= 4 || f.id === foodId || seen[f.id]) return;
         if (f.category !== food.category) return;
-        if (exclusion(f, profile)) return;
+        if (exclusion(f, profile) || isDisliked(f, profile)) return;
         seen[f.id] = true;
         out.push({ food: f, why: "Similar food in the same category" });
       });
@@ -198,9 +204,13 @@ App.Engine = (function () {
     dinner: ["grains", "fish", "meat", "legume", "veg", "leafy"],
   };
 
+  /* Which meal slots to include for a given meals-per-day preference. */
+  const SLOTS_FOR_MEALS = { 2: ["breakfast", "dinner"], 3: ["breakfast", "lunch", "dinner"], 4: ["breakfast", "lunch", "snack", "dinner"] };
+
   function generatePlan(profile, opts) {
     opts = opts || {};
     const targets = App.Profile.computeTargets(profile);
+    const slotIds = SLOTS_FOR_MEALS[profile && profile.mealsPerDay] || null;
     const rec = recommend(profile, { limit: 40, budgetMode: opts.budgetMode, plantOnly: opts.plantOnly });
     const byCategory = {};
     rec.items.forEach((it) => {
@@ -215,7 +225,7 @@ App.Engine = (function () {
     }
 
     const used = {};
-    const slots = App.DATA.mealSlots.map((slot) => {
+    const slots = App.DATA.mealSlots.filter((slot) => !slotIds || slotIds.indexOf(slot.id) >= 0).map((slot) => {
       const cats = SLOT_CATEGORIES[slot.id] || ["grains", "veg"];
       const budget = targets.energy * slot.pct;
       const picks = [];
@@ -246,5 +256,5 @@ App.Engine = (function () {
     return { slots: slots, totals: App.Profile.sumItems(flat), targets: targets, createdAt: App.State.todayISO() };
   }
 
-  return { flags, exclusion, score, recommend, alternatives, generatePlan };
+  return { flags, exclusion, isDisliked, score, recommend, alternatives, generatePlan };
 })();

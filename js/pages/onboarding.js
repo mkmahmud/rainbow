@@ -3,7 +3,7 @@
   const esc = App.UI.esc;
   const t = App.I18N.t;
 
-  const STEPS = ["Basics", "Body", "Goal", "Conditions", "Diet", "Preferences"];
+  const STEPS = ["Basics", "Body", "Goal", "Conditions", "Diet", "Preferences", "Review"];
   let step = 0;
   let draft = null;
 
@@ -13,8 +13,10 @@
     draft = Object.assign({
       age: 30, sex: "male", heightCm: 170, weightKg: 65, activity: "moderate",
       goal: "maintain", conditions: [], ckdStage: 3, allergies: [], diet: [],
+      dislikedFoods: [], mealsPerDay: 4,
       budgetSensitive: false, language: App.I18N.getLang(),
     }, (user && user.profile) || {});
+    draft.name = (user && user.name) || "";
   }
 
   function stepper() {
@@ -26,6 +28,7 @@
   function stepBody() {
     if (step === 0) {
       return '<div class="grid cols-2">' +
+        '<div class="field" style="grid-column:1/-1"><label for="ob-name">Full name</label><input class="input" id="ob-name" type="text" value="' + esc(draft.name) + '" placeholder="Your name" /></div>' +
         '<div class="field"><label for="ob-age">Age (years)</label><input class="input" id="ob-age" type="number" min="1" max="120" value="' + draft.age + '" /></div>' +
         '<div class="field"><label>Sex</label><div class="option-grid">' +
           sexOpt("male", "♂️ Male") + sexOpt("female", "♀️ Female") + sexOpt("other", "⚧ Other") +
@@ -69,14 +72,56 @@
           '<label class="check' + (draft.diet.includes(d.id) ? " checked" : "") + '">' +
             '<input type="checkbox" name="diet" value="' + d.id + '" ' + (draft.diet.includes(d.id) ? "checked" : "") + " />" +
             "<span>" + esc(App.I18N.name(d)) + "</span></label>"
-        ).join("") + "</div>";
+        ).join("") + "</div>" +
+        '<h4 class="mt-5">Foods you dislike (optional)</h4>' +
+        '<p class="muted small mt-2">We\'ll leave these out of your recommendations and plans.</p>' +
+        '<div class="option-grid mt-2" style="max-height:280px;overflow:auto;padding-right:4px">' +
+          App.State.allFoods().slice().sort((a, b) => App.I18N.name(a).localeCompare(App.I18N.name(b))).map((f) =>
+            '<label class="check' + (draft.dislikedFoods.indexOf(f.id) >= 0 ? " checked" : "") + '">' +
+              '<input type="checkbox" name="disliked" value="' + f.id + '" ' + (draft.dislikedFoods.indexOf(f.id) >= 0 ? "checked" : "") + " />" +
+              "<span>" + f.emoji + " " + esc(App.I18N.name(f)) + "</span></label>"
+          ).join("") +
+        "</div>";
     }
-    return '<div class="field"><label>Budget sensitivity</label>' +
-        '<label class="check' + (draft.budgetSensitive ? " checked" : "") + '"><input type="checkbox" id="ob-budget" ' + (draft.budgetSensitive ? "checked" : "") + ' />' +
-        "<span>I want the most affordable options prioritized</span></label></div>" +
-      '<div class="field mt-4"><label>Preferred language</label>' +
-        '<div class="segmented" id="ob-lang"><button type="button" data-lang="en" class="' + (draft.language === "en" ? "active" : "") + '">English</button>' +
-        '<button type="button" data-lang="bn" class="' + (draft.language === "bn" ? "active" : "") + '">বাংলা</button></div></div>';
+    if (step === 5) {
+      return '<div class="field"><label>Budget sensitivity</label>' +
+          '<label class="check' + (draft.budgetSensitive ? " checked" : "") + '"><input type="checkbox" id="ob-budget" ' + (draft.budgetSensitive ? "checked" : "") + ' />' +
+          "<span>I want the most affordable options prioritized</span></label></div>" +
+        '<div class="field mt-4"><label>Meals per day</label>' +
+          '<div class="segmented" id="ob-meals">' +
+            [2, 3, 4].map((n) => '<button type="button" data-meals="' + n + '" class="' + (draft.mealsPerDay === n ? "active" : "") + '">' + n + "</button>").join("") +
+          "</div></div>" +
+        '<div class="field mt-4"><label>Preferred language</label>' +
+          '<div class="segmented" id="ob-lang"><button type="button" data-lang="en" class="' + (draft.language === "en" ? "active" : "") + '">English</button>' +
+          '<button type="button" data-lang="bn" class="' + (draft.language === "bn" ? "active" : "") + '">বাংলা</button></div></div>';
+    }
+    return review();
+  }
+
+  function reviewRow(k, v) {
+    return '<div class="row between" style="padding:6px 0;border-bottom:1px solid var(--border)"><span class="muted">' + esc(k) + "</span><strong>" + esc(v) + "</strong></div>";
+  }
+  function review() {
+    const goal = App.DATA.goals.find((g) => g.id === draft.goal) || {};
+    const lvl = App.DATA.activityLevels.find((a) => a.id === draft.activity) || {};
+    const conds = (draft.conditions || []).map((c) => { const x = App.DATA.conditions.find((y) => y.id === c); return x ? App.I18N.name(x) : c; });
+    const allergies = (draft.allergies || []).map((a) => { const x = App.DATA.allergens.find((y) => y.id === a); return x ? App.I18N.name(x) : a; });
+    const diet = (draft.diet || []).map((d) => { const x = App.DATA.dietaryPrefs.find((y) => y.id === d); return x ? App.I18N.name(x) : d; });
+    return '<p class="muted small">Check everything below. Use <strong>Back</strong> to change any step.</p>' +
+      '<div class="mt-3">' +
+        reviewRow("Name", draft.name || "—") +
+        reviewRow("Age · Sex", draft.age + " · " + draft.sex) +
+        reviewRow("Height · Weight", draft.heightCm + " cm · " + draft.weightKg + " kg") +
+        reviewRow("Activity", App.I18N.name(lvl) || "—") +
+        reviewRow("Goal", App.I18N.name(goal) || "—") +
+        reviewRow("Conditions", conds.length ? conds.join(", ") : "None") +
+        reviewRow("Allergies", allergies.length ? allergies.join(", ") : "None") +
+        reviewRow("Diet", diet.length ? diet.join(", ") : "No restrictions") +
+        reviewRow("Disliked foods", draft.dislikedFoods.length ? draft.dislikedFoods.length + " items" : "None") +
+        reviewRow("Meals per day", String(draft.mealsPerDay)) +
+        reviewRow("Budget-sensitive", draft.budgetSensitive ? "Yes" : "No") +
+        reviewRow("Language", draft.language === "bn" ? "বাংলা" : "English") +
+      "</div>";
   }
 
   function sexOpt(v, label) {
@@ -100,6 +145,9 @@
   function collect() {
     const q = (id) => document.getElementById(id);
     if (step === 0) {
+      const name = (q("ob-name").value || "").trim();
+      if (!name) return fail("Please enter your name.");
+      draft.name = name;
       const age = parseInt(q("ob-age").value, 10);
       if (!age || age < 1 || age > 120) return fail("Please enter a valid age.");
       draft.age = age;
@@ -123,6 +171,7 @@
     if (step === 4) {
       draft.allergies = App.UI.qsa('input[name="allergy"]:checked').map((b) => b.value);
       draft.diet = App.UI.qsa('input[name="diet"]:checked').map((b) => b.value);
+      draft.dislikedFoods = App.UI.qsa('input[name="disliked"]:checked').map((b) => b.value);
     }
     if (step === 5) {
       draft.budgetSensitive = q("ob-budget").checked;
@@ -147,6 +196,12 @@
         main.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("active", b === lang));
         return;
       }
+      const meals = e.target.closest("[data-meals]");
+      if (meals) {
+        draft.mealsPerDay = parseInt(meals.getAttribute("data-meals"), 10);
+        main.querySelectorAll("[data-meals]").forEach((b) => b.classList.toggle("active", b === meals));
+        return;
+      }
     });
     main.addEventListener("change", (e) => {
       if (e.target.matches('[data-cond] input, [data-cond]')) {
@@ -163,7 +218,7 @@
       if (e.target.matches('input[name="sex"]')) {
         main.querySelectorAll('input[name="sex"]').forEach((r) => r.closest(".radio").classList.toggle("checked", r.checked));
       }
-      if (e.target.matches('input[name="allergy"], input[name="diet"], #ob-budget')) {
+      if (e.target.matches('input[name="allergy"], input[name="diet"], input[name="disliked"], #ob-budget')) {
         const lbl = e.target.closest(".check"); if (lbl) lbl.classList.toggle("checked", e.target.checked);
       }
     });
@@ -172,11 +227,14 @@
       if (!collect()) return;
       if (step === STEPS.length - 1) {
         const user = App.State.currentUser();
-        App.State.saveProfile(user.id, draft);
+        const profile = Object.assign({}, draft);
+        delete profile.name;
+        App.State.saveProfile(user.id, profile);
+        if (draft.name && draft.name !== user.name) App.State.updateUser(user.id, { name: draft.name });
         App.State.setLanguage(draft.language);
         App.UI.toast("Profile saved — generating suggestions");
         draft = null; step = 0;
-        App.Router.go("#/recommendations");
+        App.Router.go("#/dashboard");
         return;
       }
       step++;

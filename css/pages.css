@@ -16,6 +16,25 @@ table.table .btn + .btn { margin-left: 2px; }
 /* Review status stepper wraps nicely on mobile. */
 .stepper .step { white-space: nowrap; }
 
+/* ---------- Members: activity / weight log lists ---------- */
+.log-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.log-row:last-child { border-bottom: 0; }
+.log-row > div:first-child { flex: 1 1 auto; min-width: 0; }
+.log-group { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.log-group:last-child { border-bottom: 0; }
+.log-ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex: 0 0 auto; background: var(--tint-blue); color: var(--tint-blue-ink); }
+
+.goal-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.goal-stats > div { display: flex; flex-direction: column; gap: 2px; }
+.goal-stats strong { font-size: var(--fs-md); }
+@media (max-width: 560px) { .goal-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.link { color: var(--green-700); font-weight: 600; }
+.link:hover { text-decoration: underline; }
+
+.notif-item.unread { background: var(--green-100); border-radius: 8px; }
+.tabs .count { margin-left: 6px; background: var(--orange-800); color: #fff; border-radius: var(--r-pill); font-size: 10px; font-weight: 700; padding: 1px 6px; }
+
 /* Print-friendly diet chart */
 @media print {
   .site-header, .site-footer, .no-print, .toast-wrap, .disclaimer { display: none !important; }

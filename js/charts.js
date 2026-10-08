@@ -28,6 +28,8 @@ App.Charts = (function () {
     const h = opts.height || 200;
     const pad = { t: 14, r: 14, b: 26, l: 34 };
     const max = opts.max || Math.max.apply(null, series.map((d) => d.value).concat([1]));
+    const min = opts.min !== undefined ? opts.min : 0;
+    const span = (max - min) || 1;
     const innerW = w - pad.l - pad.r;
     const innerH = h - pad.t - pad.b;
     const stepX = series.length > 1 ? innerW / (series.length - 1) : 0;
@@ -35,7 +37,7 @@ App.Charts = (function () {
 
     const pts = series.map((d, i) => {
       const x = pad.l + i * stepX;
-      const y = pad.t + innerH - (max > 0 ? (d.value / max) * innerH : 0);
+      const y = pad.t + innerH - ((d.value - min) / span) * innerH;
       return { x: x, y: y, d: d };
     });
     const line = pts.map((p) => p.x + "," + p.y).join(" ");
@@ -43,7 +45,7 @@ App.Charts = (function () {
     const gridLines = [0, 0.5, 1].map((f) => {
       const y = pad.t + innerH - f * innerH;
       return '<line x1="' + pad.l + '" y1="' + y + '" x2="' + (pad.l + innerW) + '" y2="' + y + '" stroke="var(--border)" stroke-width="1"/>' +
-        '<text x="' + (pad.l - 6) + '" y="' + (y + 3) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + App.I18N.fmtNum(max * f) + "</text>";
+        '<text x="' + (pad.l - 6) + '" y="' + (y + 3) + '" text-anchor="end" font-size="10" fill="var(--muted)">' + App.I18N.fmtNum(Math.round((min + span * f) * 10) / 10) + "</text>";
     }).join("");
     const dots = pts.map((p) =>
       '<circle cx="' + p.x + '" cy="' + p.y + '" r="3.5" fill="' + (p.d.color || color) + '"/>'

@@ -26,18 +26,22 @@
         stat("🌾", App.I18N.fmtNum(targets.carbs) + " g", t("carbs")) +
       "</div>" +
 
-      '<div class="grid cols-2">' +
-        '<div class="card"><div class="card-title"><h3>Profile</h3></div>' +
+      '<div class="grid cols-2" style="align-items:start">' +
+        '<div class="card"><div class="card-title"><h3>Personal</h3>' +
+          '<a class="link small" href="#/onboarding">' + esc(t("common_edit")) + "</a></div>" +
+          kv("Name", user.name) +
+          kv("Email", user.email) +
           kv("Age", profile.age + " yrs") +
           kv("Sex", profile.sex) +
           kv("Height", profile.heightCm + " cm") +
-          kv("Weight", profile.weightKg + " kg") +
+          kv("Weight", (App.State.latestWeight(user.id) || profile.weightKg) + " kg") +
           kv("Activity", App.I18N.name(App.DATA.activityLevels.find((a) => a.id === profile.activity) || {})) +
           kv("Goal", App.I18N.name(App.DATA.goals.find((g) => g.id === profile.goal) || {})) +
           kv("Language", profile.language === "bn" ? "বাংলা" : "English") +
         "</div>" +
 
-        '<div class="card"><div class="card-title"><h3>Health & diet</h3></div>' +
+        '<div class="card"><div class="card-title"><h3>Health & diet</h3>' +
+          '<a class="link small" href="#/health">' + esc(t("nav_my_health")) + "</a></div>" +
           '<div class="field"><label>Conditions</label>' +
             chipList((profile.conditions || []).map((c) => { const x = App.DATA.conditions.find((y) => y.id === c); return x ? x.icon + " " + App.I18N.name(x) : c; }), "None declared", "green") +
           "</div>" +
@@ -48,6 +52,10 @@
           '<div class="field"><label>Dietary preferences</label>' +
             chipList((profile.diet || []).map((d) => { const x = App.DATA.dietaryPrefs.find((y) => y.id === d); return x ? App.I18N.name(x) : d; }), "No restrictions", "blue") +
           "</div>" +
+          '<div class="field"><label>Disliked foods (excluded)</label>' +
+            chipList((profile.dislikedFoods || []).map((id) => { const f = App.State.foodById(id); return f ? App.I18N.name(f) : id; }), "None", "grey") +
+          "</div>" +
+          '<div class="field"><label>Meals per day</label><div>' + (profile.mealsPerDay || 4) + "</div></div>" +
           (profile.budgetSensitive ? '<div class="notice">💰 Budget-aware ranking is on</div>' : "") +
         "</div>" +
       "</div>" +

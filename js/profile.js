@@ -117,5 +117,31 @@ App.Profile = (function () {
     return totals;
   }
 
-  return { NUTRIENTS, nutrientMeta, nutrientLabel, bmi, bmiCategory, computeTargets, energyTarget, isComplete, sumItems };
+  /* MET-based calories burned for an activity entry. */
+  function met(typeId) {
+    const a = (App.DATA.activityTypes || []).find((x) => x.id === typeId);
+    return a ? a.met : 4;
+  }
+  function activityKcal(entry, weightKg) {
+    const hours = ((entry && entry.minutes) || 0) / 60;
+    return Math.round(met(entry && entry.type) * (weightKg || 70) * hours);
+  }
+  function stepsToKm(steps) {
+    const perKm = App.DATA.stepsPerKm || 1500;
+    return Math.round(((steps || 0) / perKm) * 10) / 10;
+  }
+  /* 0-100 nutrition balance: how closely carbs/protein/fat track target. */
+  function balanceScore(totals, targets) {
+    if (!targets) return 0;
+    const parts = ["carbs", "protein", "fat"].map((k) => (targets[k] ? Math.min(totals[k] / targets[k], 1) : 1));
+    return Math.round((parts.reduce((a, b) => a + b, 0) / parts.length) * 100);
+  }
+  /* Macro energy split as percentages. */
+  function macroSplit(totals) {
+    const c = totals.carbs * 4, p = totals.protein * 4, f = totals.fat * 9;
+    const sum = c + p + f || 1;
+    return { carbs: Math.round((c / sum) * 100), protein: Math.round((p / sum) * 100), fat: Math.round((f / sum) * 100) };
+  }
+
+  return { NUTRIENTS, nutrientMeta, nutrientLabel, bmi, bmiCategory, computeTargets, energyTarget, isComplete, sumItems, met, activityKcal, stepsToKm, balanceScore, macroSplit };
 })();

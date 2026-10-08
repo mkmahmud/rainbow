@@ -5,8 +5,14 @@
 - Prefers requirements documents stripped down to requirements only — wants cost/budget sections, and deployment/maintenance/handover sections removed, keeping strictly the project-requirement content. Confidence: 0.6
 - Prefers generated documents (e.g., PDFs) rendered with a simple, minimal visual style rather than elaborate design. Confidence: 0.5
 - Likes deliverables provided in PDF form (in addition to markdown). Confidence: 0.5
-- Before implementation, wants the work broken into an explicit, ordered **build-phase plan** written to a markdown doc (goal/deliverables/tasks/acceptance criteria per phase) — and explicitly asks for the plan INSTEAD of the agent starting to write code. Confidence: 0.65
+- Before implementation, wants the work broken into an explicit, ordered **build-phase plan** written to a markdown doc (goal/deliverables/tasks/acceptance criteria per phase) — and explicitly asks for the plan INSTEAD of the agent starting to write code. Confidence: 0.7
 - For prototypes, prefers a plain vanilla stack — simple HTML, CSS, and JS with no framework, no build step, no npm — rather than a modern component framework. Confidence: 0.5
 - Prefers a working prototype driven by fully static/hardcoded data that actually functions end-to-end, rather than partially mocked-up or non-functional UI. Confidence: 0.5
 - Wants agreed plans then executed strictly in order, "phase by phase" from phase one — sequential implementation following the build plan, not all at once. Confidence: 0.55
 - Wants the resulting app/prototype to have a "standard and modern" design — polished, up-to-date UI. Confidence: 0.5
+- Prefers authenticated/product screens (e.g., the dashboard) to use a professional SaaS-style app shell with a persistent **sidebar** navigation (grouped nav, active states, user card, topbar) rather than a marketing-style top navigation. Confidence: 0.75
+- Wants finished work committed and pushed to GitHub as part of the workflow, not left uncommitted locally. Confidence: 0.7
+- When given a reference UI (e.g., a screenshot of another product's dashboard), wants the layout replicated as an exact match of the reference rather than a loose reimagining. Confidence: 0.6
+- When adopting a reference layout, wants it populated with the app's own real, working data rather than placeholder/fake demo values. Confidence: 0.5
+- Wants new requirements/reference designs adapted into the EXISTING app ("adjust with the existing one") — reconciling them with what is already built rather than replacing or rewriting the current work. Confidence: 0.5
+- Wants features completed in full — every navigation item and dashboard tile must lead to a real, working section, not a "Coming soon" placeholder. Confidence: 0.55

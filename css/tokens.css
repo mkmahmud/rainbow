@@ -1,16 +1,19 @@
 :root {
-  /* Brand palette — green + blue with orange accent */
+  /* Brand palette — soft green (primary) + blue with orange accent */
   --green-900: #1b5e20;
+  --green-800: #2e7d32;
   --green-700: #388e3c;
-  --green-600: #2e7d32;
+  --green-600: #43a047;
+  --green-500: #4caf50;
   --green-400: #66bb6a;
-  --green-100: #e6f2e6;
+  --green-200: #c8e6c9;
+  --green-100: #e8f5e9;
 
   --blue-900: #0d47a1;
   --blue-700: #1976d2;
   --blue-600: #1565c0;
   --blue-400: #42a5f5;
-  --blue-100: #e5f0fb;
+  --blue-100: #e3f2fd;
 
   --orange-900: #9a3412;
   --orange-800: #c2410c;
@@ -20,17 +23,31 @@
   --orange-100: #fff1e0;
 
   /* Neutrals */
-  --bg: #f4f7fa;
+  --bg: #f5f7fa;
   --surface: #ffffff;
   --surface-2: #f8fafc;
   --text: #16232e;
-  --muted: #5b6b7b;
-  --border: #dce3ea;
+  --muted: #64748b;
+  --border: #e5e7eb;
+
+  /* Pastel tints (stat-tile / icon backgrounds) */
+  --tint-green: #e8f5e9;
+  --tint-green-ink: #2e7d32;
+  --tint-red: #fdecea;
+  --tint-red-ink: #c62828;
+  --tint-blue: #e3f2fd;
+  --tint-blue-ink: #1565c0;
+  --tint-teal: #e0f7fa;
+  --tint-teal-ink: #00838f;
+  --tint-purple: #f3e8ff;
+  --tint-purple-ink: #7e22ce;
+  --tint-orange: #fff1e0;
+  --tint-orange-ink: #e65100;
 
   /* Semantic */
   --danger: #c62828;
   --danger-100: #fdecec;
-  --success: #2e7d32;
+  --success: #43a047;
   --warning: #ef6c00;
   --info: #1565c0;
 
@@ -74,15 +91,15 @@
   --sidebar-w: 264px;
   --content-max: 1180px;
 
-  /* App shell (authenticated) */
-  --sidebar-bg: #0e211a;
-  --sidebar-bg-2: #0a1a14;
-  --sidebar-text: #9db3a8;
-  --sidebar-text-strong: #f3f7f5;
-  --sidebar-line: rgba(255, 255, 255, 0.08);
-  --sidebar-hover: rgba(255, 255, 255, 0.06);
-  --sidebar-active: rgba(102, 187, 106, 0.18);
-  --sidebar-active-text: #9ae6a9;
+  /* App shell (authenticated) — light sidebar with soft-green active state */
+  --sidebar-bg: #ffffff;
+  --sidebar-bg-2: #f8fafc;
+  --sidebar-text: #64748b;
+  --sidebar-text-strong: #16232e;
+  --sidebar-line: #e5e7eb;
+  --sidebar-hover: #f1f5f9;
+  --sidebar-active: #e8f5e9;
+  --sidebar-active-text: #2e7d32;
 }
 
 /* Nutrient series used by charts + legend */

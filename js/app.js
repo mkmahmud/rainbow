@@ -10,11 +10,6 @@ App.Shell = (function () {
   function initials(name) {
     return (name || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
   }
-  function firstName(n) { return (n || "").split(" ")[0]; }
-  function greeting() {
-    const h = new Date().getHours();
-    return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
-  }
 
   /* ---------- shared fragments ---------- */
   function demoRoleItems() {
@@ -23,21 +18,28 @@ App.Shell = (function () {
     ).join("");
   }
 
+  function notifIcon(type) {
+    if (type === "appointment") return "calendar";
+    if (type === "review") return "users";
+    if (type === "reminder") return "clock";
+    return "spark";
+  }
+
   function notifications(user) {
-    const items = App.State.logs(user.id).slice(-4).reverse();
+    const items = App.State.notifications(user.id).slice(0, 6);
+    const unread = App.State.unreadCount(user.id);
     const rows = items.length
-      ? items.map((l) => {
-          const f = App.State.foodById(l.foodId);
-          if (!f) return "";
-          return '<div class="notif-item"><span class="notif-ic">' + icon("spark", 15) + "</span>" +
-            "<div><strong>" + esc("Logged " + App.I18N.name(f)) + "</strong><small>" + l.grams + " g · " + esc(l.slot) + "</small></div></div>";
-        }).join("")
+      ? items.map((n) =>
+          '<div class="notif-item' + (n.read ? "" : " unread") + '"><span class="notif-ic">' + icon(notifIcon(n.type), 15) + "</span>" +
+          "<div><strong>" + esc(n.title) + "</strong><small>" + esc(n.body || "") + " · " + esc(App.UI.fmtDate(n.at ? n.at.slice(0, 10) : "")) + "</small></div></div>"
+        ).join("")
       : '<div class="muted small" style="padding:12px">' + esc("You're all caught up.") + "</div>";
     return '<div class="menu">' +
       '<button class="bell" data-menu-toggle aria-haspopup="true" aria-expanded="false" aria-label="Notifications">' +
-        icon("bell", 19) + (items.length ? '<span class="bell-dot"></span>' : "") + "</button>" +
+        icon("bell", 19) + (unread ? '<span class="bell-dot"></span>' : "") + "</button>" +
       '<div class="menu-panel menu-panel-wide" data-menu-panel hidden>' +
         '<div class="menu-title">' + esc("Notifications") + "</div>" + rows +
+        (unread ? '<div class="menu-sep"></div><button class="menu-item" data-markread>' + icon("check", 17) + " " + esc("Mark all read") + "</button>" : "") +
       "</div>" +
     "</div>";
   }
@@ -87,16 +89,14 @@ App.Shell = (function () {
     const group = (labelKey, items) =>
       '<div class="nav-group"><div class="nav-label">' + esc(t(labelKey)) + "</div>" +
       items.map((i) => sideLink(i, path)).join("") + "</div>";
+    const groups = App.Auth.navGroups().map((g) => group(g.labelKey, g.items)).join("");
 
     return '<div class="sidebar-brand">' +
         '<a class="brand" href="#/dashboard"><span class="brand-mark">🥗</span>' +
           '<span class="brand-text">' + esc(t("appName")) + "<small>" + esc(t("tagline")) + "</small></span></a>" +
         '<button class="sidebar-close" data-sidebar-close aria-label="Close navigation">' + icon("close", 18) + "</button>" +
       "</div>" +
-      '<nav class="sidebar-nav" aria-label="Primary">' +
-        group("nav_group_menu", App.Auth.navItems()) +
-        group("nav_group_account", App.Auth.accountItems()) +
-      "</nav>" +
+      '<nav class="sidebar-nav" aria-label="Primary">' + groups + "</nav>" +
       promoCard() +
       '<div class="sidebar-foot">' +
         '<button class="side-link side-signout" data-logout>' + icon("logout", 18) + "<span>" + esc(t("nav_logout")) + "</span></button>" +
@@ -139,13 +139,12 @@ App.Shell = (function () {
   function setHeading(path, title) {
     const el = document.querySelector("[data-topbar-head]");
     if (!el) return;
-    const user = App.State.currentUser();
-    if (path === "/dashboard" && user) {
-      el.innerHTML = '<div class="greet-title">' + esc(greeting() + ", " + firstName(user.name) + "!") + "</div>" +
-        '<div class="greet-sub">' + esc(App.I18N.t("greet_sub")) + "</div>";
-    } else {
-      el.innerHTML = title ? '<div class="greet-title">' + esc(title) + "</div>" : "";
+    // The member dashboard renders its own greeting banner, so keep the topbar clean there.
+    if (path === "/dashboard" && App.State.currentUser() && App.RBAC.role(App.State.currentUser()) === App.RBAC.ROLES.MEMBER) {
+      el.innerHTML = "";
+      return;
     }
+    el.innerHTML = title ? '<div class="greet-title">' + esc(title) + "</div>" : "";
   }
 
   function footerHtml() {
@@ -248,6 +247,12 @@ App.Shell = (function () {
       if (e.target.closest("[data-lang-toggle]")) {
         App.State.setLanguage(App.I18N.getLang() === "en" ? "bn" : "en");
         App.Router.refresh();
+        return;
+      }
+      if (e.target.closest("[data-markread]")) {
+        const u = App.State.currentUser();
+        if (u) App.State.markNotificationsRead(u.id);
+        closeAllMenus();
         return;
       }
       if (e.target.closest("[data-logout]")) {

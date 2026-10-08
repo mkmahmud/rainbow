@@ -3,9 +3,16 @@
   const esc = App.UI.esc;
   const t = App.I18N.t;
 
+  function togglePref(key, checked, label, hint) {
+    return '<label class="check' + (checked ? " checked" : "") + '" style="margin-bottom:8px">' +
+      '<input type="checkbox" data-pref="' + key + '" ' + (checked ? "checked" : "") + " />" +
+      "<span><strong>" + esc(label) + '</strong><br><span class="muted xs">' + esc(hint) + "</span></span></label>";
+  }
+
   function render() {
     const user = App.State.currentUser();
     const lang = App.I18N.getLang();
+    const prefs = App.State.userPrefs(user.id);
     return '<div class="container stack" style="max-width:760px">' +
       '<div class="page-head"><div><h1>' + esc(t("nav_settings")) + "</h1>" +
       '<div class="subtitle">Preferences and demo controls.</div></div></div>' +
@@ -16,6 +23,17 @@
             '<button data-lang="en" class="' + (lang === "en" ? "active" : "") + '">English</button>' +
             '<button data-lang="bn" class="' + (lang === "bn" ? "active" : "") + '">বাংলা</button>' +
           "</div></div>" +
+      "</div>" +
+
+      '<div class="card"><div class="card-title"><h3>Notifications</h3></div>' +
+        togglePref("appointmentReminders", prefs.appointmentReminders, "Appointment reminders", "Notify me before an upcoming consultation.") +
+        togglePref("weeklySummary", prefs.weeklySummary, "Weekly summary", "A weekly recap of intake, activity and progress.") +
+        togglePref("emailUpdates", prefs.emailUpdates, "Email updates", "Send nutrition tips and product updates by email.") +
+      "</div>" +
+
+      '<div class="card"><div class="card-title"><h3>Privacy</h3></div>' +
+        togglePref("shareWithNutritionist", prefs.shareWithNutritionist, "Share my chart with a nutritionist", "Allow nutritionists to view your diet chart when you request a review.") +
+        '<p class="muted xs mt-2">In this prototype all data stays in your browser\'s local storage.</p>' +
       "</div>" +
 
       '<div class="card"><div class="card-title"><h3>Account</h3></div>' +
@@ -39,6 +57,17 @@
   }
 
   function mount(params, query, main) {
+    const user = App.State.currentUser();
+    main.addEventListener("change", (e) => {
+      const pref = e.target.closest("[data-pref]");
+      if (!pref) return;
+      const lbl = pref.closest(".check");
+      if (lbl) lbl.classList.toggle("checked", pref.checked);
+      const patch = {};
+      patch[pref.getAttribute("data-pref")] = pref.checked;
+      App.State.setUserPrefs(user.id, patch);
+      App.UI.toast("Preference saved");
+    });
     main.addEventListener("click", (e) => {
       const lang = e.target.closest("[data-lang]");
       if (lang) { App.State.setLanguage(lang.getAttribute("data-lang")); App.Router.refresh(); return; }
